@@ -27,9 +27,6 @@ public class Internet{
         }
     }
     public String ejecutarPedido(String url){
-//        String[] urlDireccion = url.split(";",-1);
-//        String tipoPedido = urlDireccion[0];
-     //   String direccion = urlDireccion[1];
 
         String tipoPedido = url.substring(0,url.indexOf(';'));
         String direccion = url.substring(url.indexOf(';')+1);
@@ -37,19 +34,13 @@ public class Internet{
         String[] partes = direccion.split(";",-1);
         String nombreServidor = partes[0];
 
-//        System.out.println("Tipo Pedido:" +tipoPedido);
-//        System.out.println("Nombre Servidor:"+nombreServidor+"-"+recurso);
-
         String respuesta = "";
         if(formatoValido(direccion)){
-            System.out.println("Formato Valido");
+
             if(!Objects.equals(servidores.size(), "0")){
-                System.out.println("Positivo");
                 if(Objects.equals(tipoPedido, "GET")){
-                    System.out.println("Es GET");
                     ServidorWeb servidor =  this.obtenerServidor(nombreServidor);
                     if(servidor!= null){
-                        System.out.println("ENCONTRADO");
                         respuesta = servidor.obtenerRespuesta(direccion);
                     }else{
                         respuesta = 500+";<h1>Server error<h1>";
@@ -65,15 +56,11 @@ public class Internet{
         return respuesta;
     }
     private ServidorWeb obtenerServidor(String nombreServidor){
-        System.out.println("Probando Este Servido = "+ nombreServidor);
         ServidorWeb respuesta = null;
-        System.out.println("Cantidad de servidores : "+servidores.size());
         for (int i=0;i<servidores.size();i++) {
             ServidorWeb servidor = servidores.get(i);
-            System.out.println("PROBANDO con estes ==="+servidor);
             if(Objects.equals(servidor.toString(), nombreServidor)){
                 respuesta = servidor;
-                System.out.println("Es Igual con este ======" + respuesta);
             }
 
         }
