@@ -1,4 +1,4 @@
-package servidor;
+package spider.servidor;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,7 +16,7 @@ public class ServidorWeb {
     public ServidorWeb(String nombreServidor){
         this.ubicacionServidores = "./servidores/";
         this.archivos = new ArrayList<>();
-        // crea un servidor verificando que haya un directorio
+        // crea un spider.servidor verificando que haya un directorio
         // con ese nombre y opcionalmente carga los archivos
         // que encuentra
         if (existeServidor(nombreServidor)){
@@ -24,45 +24,44 @@ public class ServidorWeb {
             cargarArchivos(nombreServidor);
         }
     }
-    public RespuestaHTTP obtenerRespuesta(PedidoHTTP pedido){
+    public String obtenerRespuesta(String pedido){
         //nombre del servidore
         //respueta tiene que contener, el html y codigo del resultado
 
         String metodo,url,nombreServidor = null,archivoDeBusqueda;
-        if(pedido.getUrl().contains(";")){
+        if(pedido.contains(";")){
            // String[] pedidoMetodoUrl = pedido.toString().split(",",-1);
-            url = pedido.getUrl();
+            url = pedido;
             String[] pedidoUrl = url.split(";",-1);
             nombreServidor = pedidoUrl[0];
             archivoDeBusqueda = pedidoUrl[1];
         }else{
             //String[] pedidoMetodoUrl = pedido.getUrl().split(";",-1);
-            nombreServidor= pedido.getUrl();
+            nombreServidor= pedido;
             archivoDeBusqueda = "index.html";
         }
         if (Objects.equals(archivoDeBusqueda, "") || Objects.equals(archivoDeBusqueda, "/")){
             archivoDeBusqueda = "index.html";
         }
-        RespuestaHTTP respuesta = new RespuestaHTTP(500,"<h1>Server error<h1>");
+        String respuesta = 500+";<h1>Server error<h1>";
         if(existeServidor(nombreServidor)){
            respuesta = buscarContenido(nombreServidor,archivoDeBusqueda);
         }
         return respuesta;
     }
-    private RespuestaHTTP buscarContenido(String nombreServidor,String contenidoDeBusqueda){
-        RespuestaHTTP resultado = null;
+    private String buscarContenido(String nombreServidor,String contenidoDeBusqueda){
+        String resultado = null;
         if(existeContenido(nombreServidor,contenidoDeBusqueda)){
             int codigo = 200;
             String contenido = traerInformacionDePagina(nombreServidor,contenidoDeBusqueda);
             if (contenido == ""){
-                resultado = new RespuestaHTTP(501,"<h1>Not implemented<h1>");
+                resultado = 501+";<h1>Not implemented<h1>";
             }else{
-                resultado = new RespuestaHTTP(codigo,contenido);
+                resultado = codigo+";"+contenido;
             }
-
         }
         else{
-            resultado = new RespuestaHTTP(404,"<h1>Not found<h1>");
+            resultado = 404+";<h1>Not found<h1>";
         }
         return resultado;
     }

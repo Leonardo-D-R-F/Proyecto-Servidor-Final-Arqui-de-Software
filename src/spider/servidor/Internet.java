@@ -1,14 +1,11 @@
-package servidor;
-
-import servidor.PedidoHTTP;
-import servidor.RespuestaHTTP;
-import servidor.ServidorWeb;
+package spider.servidor;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -17,47 +14,66 @@ import java.util.regex.Pattern;
 
 public class Internet{
     private List<ServidorWeb> servidores;
+
     public Internet (){
         servidores = new ArrayList<>();
 //        Thread mihilo = new Thread(this);
 //        mihilo.start();
     }
     public void registrar(ServidorWeb servidorWeb){
-        // debe verifica que el servidor no este registrado
+        // debe verifica que el spider.servidor no este registrado
         if(!servidorExiste(servidorWeb)){
             servidores.add(servidorWeb);
         }
     }
-    public RespuestaHTTP ejecutarPedido(PedidoHTTP pedido){
-        String[] urlDireccion = pedido.getUrl().split(";",-1);
-        String nombreServidor = urlDireccion[0];
+    public String ejecutarPedido(String url){
+//        String[] urlDireccion = url.split(";",-1);
+//        String tipoPedido = urlDireccion[0];
+     //   String direccion = urlDireccion[1];
 
-        RespuestaHTTP respuesta = null;
-        if(formatoValido(pedido.getUrl())){
+        String tipoPedido = url.substring(0,url.indexOf(';'));
+        String direccion = url.substring(url.indexOf(';')+1);
+
+        String[] partes = direccion.split(";",-1);
+        String nombreServidor = partes[0];
+
+//        System.out.println("Tipo Pedido:" +tipoPedido);
+//        System.out.println("Nombre Servidor:"+nombreServidor+"-"+recurso);
+
+        String respuesta = "";
+        if(formatoValido(direccion)){
+            System.out.println("Formato Valido");
             if(!Objects.equals(servidores.size(), "0")){
-                if(Objects.equals(pedido.getMetodo(), "GET")){
+                System.out.println("Positivo");
+                if(Objects.equals(tipoPedido, "GET")){
+                    System.out.println("Es GET");
                     ServidorWeb servidor =  this.obtenerServidor(nombreServidor);
                     if(servidor!= null){
-                        respuesta = servidor.obtenerRespuesta(pedido);
+                        System.out.println("ENCONTRADO");
+                        respuesta = servidor.obtenerRespuesta(direccion);
                     }else{
-                        respuesta = new RespuestaHTTP(500,"<h1>Server error<h1>");
+                        respuesta = 500+";<h1>Server error<h1>";
                     }
                 }
             }else{
-                respuesta = new RespuestaHTTP(400,"<h1>Bad request<h1>");
+                respuesta = 400+";<h1>Bad request<h1>";
             }
         }else{
-            respuesta= new RespuestaHTTP(400,"<h1>Bad request<h1>");
+            respuesta= 400+";<h1>Bad request<h1>";
         }
 
         return respuesta;
     }
     private ServidorWeb obtenerServidor(String nombreServidor){
+        System.out.println("Probando Este Servido = "+ nombreServidor);
         ServidorWeb respuesta = null;
+        System.out.println("Cantidad de servidores : "+servidores.size());
         for (int i=0;i<servidores.size();i++) {
             ServidorWeb servidor = servidores.get(i);
+            System.out.println("PROBANDO con estes ==="+servidor);
             if(Objects.equals(servidor.toString(), nombreServidor)){
                 respuesta = servidor;
+                System.out.println("Es Igual con este ======" + respuesta);
             }
 
         }
@@ -84,12 +100,12 @@ public class Internet{
     }
     //@Override
     public void run() throws IOException {
+        int puerto = 8080;
         ServerSocket servidor =  null;
         Socket misocket = null;
 
         DataInputStream flujoEntrada;
         DataOutputStream flujoSalida;
-        final int puerto = 9999;
 
         System.out.println("Estoy a la escucha");
         servidor = new ServerSocket(puerto);
@@ -101,22 +117,15 @@ public class Internet{
                 flujoEntrada = new DataInputStream(misocket.getInputStream());
                 flujoSalida = new DataOutputStream(misocket.getOutputStream());
 
-                String tipoPeticion = "";
-                String url = "";
+                String pedido = "";
 
-                tipoPeticion = flujoEntrada.readUTF();
-                url = flujoEntrada.readUTF();
+                pedido = flujoEntrada.readUTF();
+                System.out.println(pedido);
 
-                PedidoHTTP pedidoHTTP = new PedidoHTTP(tipoPeticion, url);
+                String respuesta = this.ejecutarPedido(pedido);
 
-                RespuestaHTTP respuestaHTTP = this.ejecutarPedido(pedidoHTTP);
-
-                String codigo = respuestaHTTP.getCodigoRespuesta() + "";
-                String mensaje = respuestaHTTP.getRecurso();
-
-                System.out.println(codigo + mensaje);
-                flujoSalida.writeUTF(codigo);
-                flujoSalida.writeUTF(mensaje);
+                System.out.println(respuesta);
+                flujoSalida.writeUTF(respuesta);
 
                 misocket.close();
             }

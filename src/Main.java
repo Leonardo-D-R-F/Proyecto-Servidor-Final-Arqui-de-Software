@@ -1,13 +1,7 @@
-import servidor.Internet;
-import servidor.PedidoHTTP;
-import servidor.RespuestaHTTP;
-import servidor.ServidorWeb;
+import spider.servidor.Internet;
+import spider.servidor.ServidorWeb;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
 //import spider.navegador.NavegadorWeb;
 
 public class Main {
@@ -19,9 +13,7 @@ public class Main {
        internet.registrar(google);
        internet.registrar(fcyt);
        internet.registrar(csumss);
-       //NavegadorWeb aracnido = new NavegadorWeb(internet);
-       //aracnido.run();
-        internet.run();
+       internet.run();
     }
 
 }
