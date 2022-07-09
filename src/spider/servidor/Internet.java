@@ -12,13 +12,13 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Internet{
+public class Internet {
     private List<ServidorWeb> servidores;
 
     public Internet (){
         servidores = new ArrayList<>();
-//        Thread mihilo = new Thread(this);
-//        mihilo.start();
+    //    Thread mihilo = new Thread(this);
+     ///  mihilo.start();
     }
     public void registrar(ServidorWeb servidorWeb){
         // debe verifica que el spider.servidor no este registrado
@@ -26,33 +26,32 @@ public class Internet{
             servidores.add(servidorWeb);
         }
     }
-    public String ejecutarPedido(String url){
+    public String ejecutarPedido(String pedido){
 
-        String tipoPedido = url.substring(0,url.indexOf(';'));
-        String direccion = url.substring(url.indexOf(';')+1);
+        String tipoPedido = pedido.substring(0,pedido.indexOf(';'));
+        String direccion = pedido.substring(pedido.indexOf(';')+1);
 
         String[] partes = direccion.split(";",-1);
         String nombreServidor = partes[0];
 
         String respuesta = "";
-        if(formatoValido(direccion)){
-
+        System.out.println(pedido);
+        if(formatoValido(pedido)){
             if(!Objects.equals(servidores.size(), "0")){
                 if(Objects.equals(tipoPedido, "GET")){
                     ServidorWeb servidor =  this.obtenerServidor(nombreServidor);
                     if(servidor!= null){
-                        respuesta = servidor.obtenerRespuesta(direccion);
+                        respuesta = servidor.obtenerRespuesta(pedido);
                     }else{
-                        respuesta = 500+";<h1>Server error<h1>";
+                        respuesta = 500+";<h1>Server error</h1>";
                     }
                 }
             }else{
-                respuesta = 400+";<h1>Bad request<h1>";
+                respuesta = 400+";<h1>Bad request</h1>";
             }
         }else{
-            respuesta= 400+";<h1>Bad request<h1>";
+            respuesta= 400+";<h1>Bad request</h1>";
         }
-
         return respuesta;
     }
     private ServidorWeb obtenerServidor(String nombreServidor){
@@ -78,7 +77,7 @@ public class Internet{
     }
     private boolean formatoValido(String pedido){
         boolean respuesta = false;
-        Pattern patron = Pattern.compile("[A-Za-z0-9./]{1,}[;]{0,}[A-Za-z./]{0,}");
+        Pattern patron = Pattern.compile("[A-Za-z]{1,}[;]{1}[A-Za-z0-9./]{1,}[;]{1,}[A-Za-z./]{0,}");
         Matcher mat = patron.matcher(pedido);
         if(mat.matches()){
             respuesta = true;
@@ -87,6 +86,12 @@ public class Internet{
     }
     //@Override
     public void run() throws IOException {
+
+        for (int i=0;i<servidores.size();i++) {
+            ServidorWeb servidor = servidores.get(i);
+
+        }
+
         int puerto = 8080;
         ServerSocket servidor =  null;
         Socket misocket = null;
@@ -116,7 +121,5 @@ public class Internet{
 
                 misocket.close();
             }
-
-
     }
 }

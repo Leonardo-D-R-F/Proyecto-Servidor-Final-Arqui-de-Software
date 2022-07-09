@@ -1,16 +1,19 @@
 package spider.servidor;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class ServidorWeb {
+public class ServidorWeb{
     private String ubicacionServidores;
+    private String ip;
+    private String puerto;
     private final List<File> archivos;
     String nombreServidor;
     public ServidorWeb(String nombreServidor){
@@ -27,25 +30,24 @@ public class ServidorWeb {
     public String obtenerRespuesta(String pedido){
         //nombre del servidore
         //respueta tiene que contener, el html y codigo del resultado
-
-        String metodo,url,nombreServidor = null,archivoDeBusqueda;
-        if(pedido.contains(";")){
-           // String[] pedidoMetodoUrl = pedido.toString().split(",",-1);
-            url = pedido;
-            String[] pedidoUrl = url.split(";",-1);
-            nombreServidor = pedidoUrl[0];
-            archivoDeBusqueda = pedidoUrl[1];
+        String respuesta = 500+";<h1>Server error</h1>";
+        String metodo,url,nombreServidor = null;
+        String archivoDeBusqueda = null;
+        if(formatoValido(pedido)){
+            String[] pedidoInformacion = pedido.split(";",-1);
+            metodo = pedidoInformacion[0];
+            nombreServidor = pedidoInformacion[1];
+            archivoDeBusqueda = pedidoInformacion[2];
+            if(Objects.equals(metodo, "GET")){
+                if (Objects.equals(archivoDeBusqueda, "") || Objects.equals(archivoDeBusqueda, "/")){
+                    archivoDeBusqueda = "index.html";
+                }
+                if(existeServidor(nombreServidor)){
+                    respuesta = buscarContenido(nombreServidor,archivoDeBusqueda);
+                }
+            }
         }else{
-            //String[] pedidoMetodoUrl = pedido.getUrl().split(";",-1);
-            nombreServidor= pedido;
-            archivoDeBusqueda = "index.html";
-        }
-        if (Objects.equals(archivoDeBusqueda, "") || Objects.equals(archivoDeBusqueda, "/")){
-            archivoDeBusqueda = "index.html";
-        }
-        String respuesta = 500+";<h1>Server error<h1>";
-        if(existeServidor(nombreServidor)){
-           respuesta = buscarContenido(nombreServidor,archivoDeBusqueda);
+            respuesta= 400+";<h1>Bad request</h1>";
         }
         return respuesta;
     }
@@ -113,9 +115,45 @@ public class ServidorWeb {
     public String toString() {
         return nombreServidor;
     }
-}
+    private boolean formatoValido(String pedido){
+        boolean respuesta = false;
+        Pattern patron = Pattern.compile("[A-Za-z]{1,}[;]{1}[A-Za-z0-9./]{1,}[;]{1}[A-Za-z./]{0,}");
+        Matcher mat = patron.matcher(pedido);
+        if(mat.matches()){
+            respuesta = true;
+        }
+        return respuesta;
+    }
 
-//un ejercicio para llevar la orientada a objetos a la forma mas extrema
-//ayuda a pensar en los principios mas simples en el desarrollo
-//- Calentamiento
-//- implementar 
+    public void iniciar() throws IOException{
+        int puerto = 8080;
+        ServerSocket servidor =  null;
+        Socket misocket = null;
+
+        DataInputStream flujoEntrada;
+        DataOutputStream flujoSalida;
+
+        System.out.println("Estoy a la escucha");
+        servidor = new ServerSocket(puerto);
+
+        while (true) {
+
+            misocket = servidor.accept();
+
+            flujoEntrada = new DataInputStream(misocket.getInputStream());
+            flujoSalida = new DataOutputStream(misocket.getOutputStream());
+
+            String pedido = "";
+
+            pedido = flujoEntrada.readUTF();
+            System.out.println(pedido);
+
+            String respuesta = this.obtenerRespuesta(pedido);
+
+            System.out.println(respuesta);
+            flujoSalida.writeUTF(respuesta);
+
+            misocket.close();
+        }
+    }
+}

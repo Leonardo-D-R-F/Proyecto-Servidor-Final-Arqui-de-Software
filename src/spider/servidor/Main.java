@@ -1,3 +1,5 @@
+package spider.servidor;
+
 import spider.servidor.Internet;
 import spider.servidor.ServidorWeb;
 
@@ -9,11 +11,6 @@ public class Main {
        ServidorWeb google = new ServidorWeb("www.google.com");
        ServidorWeb fcyt = new ServidorWeb("www.fcyt.umss.edu.bo");
        ServidorWeb csumss = new ServidorWeb("www.cs.umss.edu.bo");
-       Internet internet = new Internet();
-       internet.registrar(google);
-       internet.registrar(fcyt);
-       internet.registrar(csumss);
-       internet.run();
+       google.iniciar();
     }
-
 }
