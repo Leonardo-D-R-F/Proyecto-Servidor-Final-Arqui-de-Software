@@ -12,58 +12,51 @@ import java.util.regex.Pattern;
 
 public class ServidorWeb{
     private String ubicacionServidores;
-    private String ip;
-    private String puerto;
     private final List<File> archivos;
     String nombreServidor;
     public ServidorWeb(String nombreServidor){
         this.ubicacionServidores = "./servidores/";
         this.archivos = new ArrayList<>();
-        // crea un spider.servidor verificando que haya un directorio
-        // con ese nombre y opcionalmente carga los archivos
-        // que encuentra
         if (existeServidor(nombreServidor)){
             this.nombreServidor = nombreServidor;
             cargarArchivos(nombreServidor);
         }
     }
     public String obtenerRespuesta(String pedido){
-        //nombre del servidore
-        //respueta tiene que contener, el html y codigo del resultado
-        String respuesta = 500+";<h1>Server error</h1>";
-        String metodo,url,nombreServidor = null;
-        String archivoDeBusqueda = null;
+        String respuesta = 500+";<HTML><BODY><H1>Server error</H1></BODY></HTML>";
+        String metodo,nombreServidor;
+        String archivoDeBusqueda;
         if(formatoValido(pedido)){
             String[] pedidoInformacion = pedido.split(";",-1);
             metodo = pedidoInformacion[0];
-            nombreServidor = pedidoInformacion[1];
-            archivoDeBusqueda = pedidoInformacion[2];
+            //nombreServidor = pedidoInformacion[1];
+            archivoDeBusqueda = pedidoInformacion[1];
             if(Objects.equals(metodo, "GET")){
                 if (Objects.equals(archivoDeBusqueda, "") || Objects.equals(archivoDeBusqueda, "/")){
                     archivoDeBusqueda = "index.html";
                 }
-                if(existeServidor(nombreServidor)){
-                    respuesta = buscarContenido(nombreServidor,archivoDeBusqueda);
+                if(existeServidor(this.nombreServidor)){
+                    respuesta = buscarContenido(this.nombreServidor,archivoDeBusqueda);
                 }
             }
         }else{
-            respuesta= 400+";<h1>Bad request</h1>";
+            respuesta= 400+";<HTML><BODY><H1>Bad request</H1></BODY></HTML>";
         }
         return respuesta;
     }
     private String buscarContenido(String nombreServidor,String contenidoDeBusqueda){
-        String resultado = null;
+        String resultado;
         if(existeContenido(nombreServidor,contenidoDeBusqueda)){
             int codigo = 200;
             String contenido = traerInformacionDePagina(nombreServidor,contenidoDeBusqueda);
-            if (contenido == ""){
-                resultado = 501+";<h1>Not implemented<h1>";
+            if (contenido.equals("")){
+                resultado = 501+";<HTML><BODY><H1>Not implemented</H1></BODY></HTML>";
             }else{
                 resultado = codigo+";"+contenido;
             }
         }
         else{
-            resultado = 404+";<h1>Not found<h1>";
+            resultado = 404+";<HTML><BODY><H1>Not found</H1></BODY></HTML>";
         }
         return resultado;
     }
@@ -73,7 +66,6 @@ public class ServidorWeb{
         if (directorio.exists()) {
             respuesta = true;
         }
-
         return respuesta;
 
     }
@@ -86,17 +78,25 @@ public class ServidorWeb{
         return respuesta;
     }
     private String traerInformacionDePagina(String nombreServidor,String contenidoDeBusqueda){
-        String cadena= "";
+        StringBuilder cadena= new StringBuilder();
+        boolean bandera = true;
         InputStream ins = null;
         try {
             ins = new FileInputStream(this.ubicacionServidores +nombreServidor+"/"+contenidoDeBusqueda);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        assert ins != null;
         Scanner obj = new Scanner(ins);
         while (obj.hasNextLine())
-        cadena = cadena +obj.nextLine();
-        return cadena;
+            if(bandera){
+                cadena = new StringBuilder(obj.nextLine());
+                bandera = false ;
+            }else {
+                cadena.append("\n").append(obj.nextLine());
+            }
+
+        return cadena.toString();
     }
     private void cargarArchivos(String nombreServidor){
         File carpeta = new File(ubicacionServidores+nombreServidor);
@@ -117,18 +117,17 @@ public class ServidorWeb{
     }
     private boolean formatoValido(String pedido){
         boolean respuesta = false;
-        Pattern patron = Pattern.compile("[A-Za-z]{1,}[;]{1}[A-Za-z0-9./]{1,}[;]{1}[A-Za-z./]{0,}");
+        Pattern patron = Pattern.compile("[A-Za-z0-9./]+[;][A-Za-z0-9./]*");
         Matcher mat = patron.matcher(pedido);
         if(mat.matches()){
             respuesta = true;
         }
         return respuesta;
     }
-
     public void iniciar() throws IOException{
         int puerto = 8080;
-        ServerSocket servidor =  null;
-        Socket misocket = null;
+        ServerSocket servidor;
+        Socket misocket;
 
         DataInputStream flujoEntrada;
         DataOutputStream flujoSalida;
@@ -143,7 +142,7 @@ public class ServidorWeb{
             flujoEntrada = new DataInputStream(misocket.getInputStream());
             flujoSalida = new DataOutputStream(misocket.getOutputStream());
 
-            String pedido = "";
+            String pedido;
 
             pedido = flujoEntrada.readUTF();
             System.out.println(pedido);
