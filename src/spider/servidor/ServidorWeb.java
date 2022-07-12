@@ -29,14 +29,14 @@ public class ServidorWeb{
         if(formatoValido(pedido)){
             String[] pedidoInformacion = pedido.split(";",-1);
             metodo = pedidoInformacion[0];
-            //nombreServidor = pedidoInformacion[1];
+            nombreServidor = this.nombreServidor;
             archivoDeBusqueda = pedidoInformacion[1];
             if(Objects.equals(metodo, "GET")){
                 if (Objects.equals(archivoDeBusqueda, "") || Objects.equals(archivoDeBusqueda, "/")){
                     archivoDeBusqueda = "index.html";
                 }
-                if(existeServidor(this.nombreServidor)){
-                    respuesta = buscarContenido(this.nombreServidor,archivoDeBusqueda);
+                if(existeServidor(nombreServidor)){
+                    respuesta = buscarContenido(nombreServidor,archivoDeBusqueda);
                 }
             }
         }else{
@@ -93,7 +93,7 @@ public class ServidorWeb{
                 cadena = new StringBuilder(obj.nextLine());
                 bandera = false ;
             }else {
-                cadena.append("\n").append(obj.nextLine());
+                cadena.append(obj.nextLine());
             }
 
         return cadena.toString();
@@ -117,7 +117,7 @@ public class ServidorWeb{
     }
     private boolean formatoValido(String pedido){
         boolean respuesta = false;
-        Pattern patron = Pattern.compile("[A-Za-z0-9./]+[;][A-Za-z0-9./]*");
+        Pattern patron = Pattern.compile("[A-Za-z0-9]+[;][A-Za-z0-9./]*");
         Matcher mat = patron.matcher(pedido);
         if(mat.matches()){
             respuesta = true;
