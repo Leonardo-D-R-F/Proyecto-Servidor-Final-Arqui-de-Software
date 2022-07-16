@@ -11,7 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ServidorWeb{
-    private String ubicacionServidores;
+    private final String ubicacionServidores;
     private final List<File> archivos;
     String nombreServidor;
     public ServidorWeb(String nombreServidor){
@@ -117,7 +117,7 @@ public class ServidorWeb{
     }
     private boolean formatoValido(String pedido){
         boolean respuesta = false;
-        Pattern patron = Pattern.compile("[A-Za-z0-9]+[;][A-Za-z0-9./]*");
+            Pattern patron = Pattern.compile("[A-Za-z0-9]+[;][A-Za-z0-9./]*");
         Matcher mat = patron.matcher(pedido);
         if(mat.matches()){
             respuesta = true;
